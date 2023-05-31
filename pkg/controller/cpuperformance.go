@@ -71,11 +71,15 @@ func (c *CPUPerformanceLogging) Run() {
 	for {
 		select {
 		case <-ticker.C:
-			e := datatype.NewEventBuilder(datatype.EventType("sys.plugin.perf"))
+
 			if mem, err := c.readMemory(); err != nil {
-				e = e.AddEntry("memory", strconv.Itoa(mem))
+				c.Notifier.Notify(
+					datatype.NewEventBuilder(datatype.EventPluginPerfMem).
+						AddEntry("memory", strconv.Itoa(mem)).
+						Build(),
+				)
 			}
-			c.Notifier.Notify(e.Build())
+
 		case <-c.quit:
 			ticker.Stop()
 			return

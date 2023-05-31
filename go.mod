@@ -16,7 +16,7 @@ require (
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d // indirect
 	github.com/streadway/amqp v1.0.0 // indirect
-	github.com/waggle-sensor/edge-scheduler v0.0.2-0.20230330175905-203ef2967469 // indirect
+	github.com/waggle-sensor/edge-scheduler v0.0.2-0.20230531224719-7f3cecc56261 // indirect
 	golang.org/x/net v0.8.0 // indirect
 	golang.org/x/text v0.8.0 // indirect
 	gopkg.in/cenkalti/backoff.v1 v1.1.0 // indirect

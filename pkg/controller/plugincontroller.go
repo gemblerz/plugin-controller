@@ -28,21 +28,22 @@ func NewController(c ControllerConfig) *Controller {
 }
 
 func (c *Controller) Run() {
-	e := make(chan datatype.Event)
+	ch := make(chan datatype.Event)
 	if c.config.EnableCPUPerformanceLogging {
 		logger.Info.Println("CPU performance measurement enabled")
 		p := NewCPUPerformanceLogging(c.config)
-		p.Notifier.Subscribe(e)
+		p.Notifier.Subscribe(ch)
 		go p.Run()
 	}
 	if c.config.EnableGPUPerformanceLogging {
 		logger.Info.Println("GPU performance measurement enabled")
 		g := NewGPUPerformanceLogging(c.config)
-		g.Notifier.Subscribe(e)
+		g.Notifier.Subscribe(ch)
 		go g.Run()
 	}
 
-	for event := range e {
-		logger.Info.Println(event.ToString())
+	for e := range ch {
+		data, _ := e.EncodeMetaToJson()
+		logger.Info.Printf("%s: %s", e.ToString(), data)
 	}
 }

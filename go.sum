@@ -110,8 +110,10 @@ github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+
 github.com/stretchr/testify v1.3.0/go.mod h1:M5WIy9Dh21IEIfnGCwXGc5bZfKNJtfHm1UVUgZn+9EI=
 github.com/stretchr/testify v1.5.1/go.mod h1:5W2xD1RspED5o8YsWQXVCued0rvSQ+mT+I5cxcmMvtA=
 github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
-github.com/waggle-sensor/edge-scheduler v0.0.2-0.20230330175905-203ef2967469 h1:+pjTfqmozl8VThlcJjlamq/YtzCVYPUy34vaCAqNyIc=
-github.com/waggle-sensor/edge-scheduler v0.0.2-0.20230330175905-203ef2967469/go.mod h1:IWWRx9BOM5QfC3EMQSwF9GVgera5iRGWnMHTTeptItM=
+github.com/waggle-sensor/edge-scheduler v0.0.2-0.20230514025547-6e106f2b2115 h1:irhikgaH9yzACBHkM0JOhXMnrHbuq+vKkhJIsRkk+HA=
+github.com/waggle-sensor/edge-scheduler v0.0.2-0.20230514025547-6e106f2b2115/go.mod h1:GBP0gflhHO7i5DzXSrYEWcAdepQfFqhm+/FgT23/hpo=
+github.com/waggle-sensor/edge-scheduler v0.0.2-0.20230531224719-7f3cecc56261 h1:eonbJUJ2kO0SV+CKh5odqWmCgYVwRE0FYH2kmhLDoIU=
+github.com/waggle-sensor/edge-scheduler v0.0.2-0.20230531224719-7f3cecc56261/go.mod h1:GBP0gflhHO7i5DzXSrYEWcAdepQfFqhm+/FgT23/hpo=
 github.com/yuin/goldmark v1.1.27/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.2.1/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.3.5/go.mod h1:mwnBkeHKe2W/ZEtQ+71ViKU8L12m81fl3OWwC1Zlc8k=
