@@ -11,6 +11,7 @@ import (
 
 	"github.com/waggle-sensor/edge-scheduler/pkg/datatype"
 	"github.com/waggle-sensor/edge-scheduler/pkg/interfacing"
+	"github.com/waggle-sensor/edge-scheduler/pkg/logger"
 )
 
 type CPUPerformanceLogging struct {
@@ -37,7 +38,7 @@ func (c *CPUPerformanceLogging) readMemory() (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	totalUsedMemory, err := strconv.Atoi(string(totalUsedMemoryByte))
+	totalUsedMemory, err := strconv.Atoi(strings.TrimSpace(string(totalUsedMemoryByte)))
 	if err != nil {
 		return 0, err
 	}
@@ -71,15 +72,14 @@ func (c *CPUPerformanceLogging) Run() {
 	for {
 		select {
 		case <-ticker.C:
-
-			if mem, err := c.readMemory(); err != nil {
-				c.Notifier.Notify(
-					datatype.NewEventBuilder(datatype.EventPluginPerfMem).
-						AddEntry("memory", strconv.Itoa(mem)).
-						Build(),
-				)
+			if mem, err := c.readMemory(); err == nil {
+				e := datatype.NewEventBuilder(datatype.EventPluginPerfMem).
+					AddEntry("memory", strconv.Itoa(mem)).
+					Build()
+				c.Notifier.Notify(e)
+			} else {
+				logger.Error.Println(err.Error())
 			}
-
 		case <-c.quit:
 			ticker.Stop()
 			return
