@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"path"
+	"net/url"
 	"regexp"
 	"strconv"
 	"strings"
@@ -30,7 +30,11 @@ func NewGPUPerformanceLogging(c ControllerConfig) *GPUPerformanceLogging {
 }
 
 func (g *GPUPerformanceLogging) getGPUMetric() (int, error) {
-	resp, err := http.Get(path.Join(g.GPUMetricHost, ":9101/metrics"))
+	s, err := url.JoinPath(fmt.Sprintf("http://%s:9101", g.GPUMetricHost), "metrics")
+	if err != nil {
+		return 0, err
+	}
+	resp, err := http.Get(s)
 	if err != nil {
 		return 0, err
 	}

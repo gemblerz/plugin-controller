@@ -7,7 +7,7 @@ RUN go mod download \
   && CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o ./out/plugin-controller cmd/controller/main.go \
   && chmod +x ./out/plugin-controller
 
-FROM base
+FROM alpine:3.17
 COPY --from=builder /app/out/plugin-controller /app/plugin-controller
 
 ENTRYPOINT ["/app/plugin-controller"]

@@ -4,9 +4,37 @@ import (
 	"os"
 	"path"
 	"testing"
+	"time"
 
 	"gotest.tools/v3/assert"
 )
+
+func TestReadCPU(t *testing.T) {
+	cgroupCPUPath := "/tmp/test/cgroup/cpu,cpuacct"
+	if err := os.MkdirAll(cgroupCPUPath, os.ModePerm); err != nil {
+		t.Fatal(err)
+	}
+	stat := []byte(`user 0
+	system 0
+	`)
+	if err := os.WriteFile(path.Join(cgroupCPUPath, "cpuacct.stat"), stat, 0644); err != nil {
+		t.Fatal(err)
+	}
+	c := NewCPUPerformanceLogging(ControllerConfig{
+		AppCgroupDir: "/tmp/test/cgroup",
+	})
+	c.readCPUPerc()
+	stat = []byte(`user 150
+	system 150
+	`)
+	if err := os.WriteFile(path.Join(cgroupCPUPath, "cpuacct.stat"), stat, 0644); err != nil {
+		t.Fatal(err)
+	}
+	time.Sleep(1 * time.Second)
+	cpu, _ := c.readCPUPerc()
+	t.Log(cpu)
+	assert.Assert(t, 300-cpu < 1.)
+}
 
 func TestReadMemory(t *testing.T) {
 	cgroupMemoryPath := "/tmp/test/cgroup/memory"
