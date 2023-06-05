@@ -110,7 +110,6 @@ func (c *CPUPerformanceLogging) Run() {
 					AddEntry("cpu_util", strconv.FormatFloat(cpu, 'f', 2, 32)).
 					Build()
 				c.Notifier.Notify(e)
-
 			} else {
 				logger.Error.Println(err.Error())
 			}
