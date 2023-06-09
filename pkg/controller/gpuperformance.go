@@ -57,7 +57,8 @@ func (g *GPUPerformanceLogging) getGPUMetric() (float64, error) {
 	if err != nil {
 		return 0, err
 	}
-	return gpuUtil, nil
+	// gpuUtil reported from wes-jetson-exporter ranges from [0., 1.]
+	return gpuUtil * 100., nil
 }
 
 func (g *GPUPerformanceLogging) Stop() {

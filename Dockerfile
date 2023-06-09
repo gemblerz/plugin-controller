@@ -1,13 +1,14 @@
 FROM golang:1.20.4-alpine3.17 as base
-WORKDIR /app
+WORKDIR /
 
 FROM base as builder
-COPY . /app/
+WORKDIR /code
+COPY . /code/
 RUN go mod download \
   && CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o ./out/plugin-controller cmd/controller/main.go \
   && chmod +x ./out/plugin-controller
 
 FROM alpine:3.17
-COPY --from=builder /app/out/plugin-controller /app/plugin-controller
+COPY --from=builder /code/out/plugin-controller /plugin-controller
 
-ENTRYPOINT ["/app/plugin-controller"]
+ENTRYPOINT ["/plugin-controller"]
