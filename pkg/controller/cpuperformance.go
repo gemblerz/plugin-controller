@@ -18,6 +18,7 @@ type CPUPerformanceLogging struct {
 	CgroupDir         string
 	Notifier          *interfacing.Notifier
 	quit              chan struct{}
+	interval          int
 	lastTotalCPUUsed  uint64
 	lastTotalCPUUsedT time.Time
 }
@@ -27,6 +28,7 @@ func NewCPUPerformanceLogging(c ControllerConfig) *CPUPerformanceLogging {
 		CgroupDir:         c.AppCgroupDir,
 		Notifier:          interfacing.NewNotifier(),
 		quit:              make(chan struct{}),
+		interval:          c.PerformanceCollectionInterval,
 		lastTotalCPUUsed:  0,
 		lastTotalCPUUsedT: time.Now(),
 	}
@@ -93,13 +95,13 @@ func (c *CPUPerformanceLogging) Stop() {
 }
 
 func (c *CPUPerformanceLogging) Run() {
-	ticker := time.NewTicker(5 * time.Second)
+	ticker := time.NewTicker(time.Duration(c.interval) * time.Second)
 	for {
 		select {
 		case <-ticker.C:
 			if mem, err := c.readMemory(); err == nil {
 				e := datatype.NewEventBuilder(datatype.EventPluginPerfMem).
-					AddEntry("memory", strconv.FormatUint(mem, 10)).
+					AddValue(mem).
 					Build()
 				c.Notifier.Notify(e)
 			} else {
@@ -107,7 +109,7 @@ func (c *CPUPerformanceLogging) Run() {
 			}
 			if cpu, err := c.readCPUPerc(); err == nil {
 				e := datatype.NewEventBuilder(datatype.EventPluginPerfCPU).
-					AddEntry("cpu_util", strconv.FormatFloat(cpu, 'f', 2, 32)).
+					AddValue(cpu).
 					Build()
 				c.Notifier.Notify(e)
 			} else {

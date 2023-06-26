@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/waggle-sensor/edge-scheduler/pkg/datatype"
+	"github.com/waggle-sensor/edge-scheduler/pkg/interfacing"
 	"github.com/waggle-sensor/edge-scheduler/pkg/logger"
 	"gopkg.in/cenkalti/backoff.v1"
 
@@ -17,16 +18,25 @@ import (
 // or this can be streamed to a time-series database
 
 type ControllerConfig struct {
-	EnableCPUPerformanceLogging bool
-	EnableGPUPerformanceLogging bool
-	PluginProcessName           string
-	AppCgroupDir                string
-	GPUMetricHost               string
+	EnableCPUPerformanceLogging   bool
+	EnableGPUPerformanceLogging   bool
+	PerformanceCollectionInterval int
+	PluginProcessName             string
+	AppCgroupDir                  string
+	GPUMetricHost                 string
+	EnableMetricsPublishing       bool
+	MetricsPublishingScope        string
+	RabbitMQHost                  string
+	RabbitMQPort                  int
+	RabbitMQUsername              string
+	RabbitMQPassword              string
+	RabbitMQAppID                 string
 }
 
 type Controller struct {
 	config     ControllerConfig
 	pluginProc *process.Process
+	rmq        *interfacing.RabbitMQHandler
 }
 
 func NewController(c ControllerConfig) *Controller {
@@ -73,6 +83,12 @@ func (c *Controller) Run() {
 	logger.Info.Println("plugin controller started.")
 	ch := make(chan datatype.Event)
 
+	if c.config.EnableMetricsPublishing {
+		rabbitMQURL := fmt.Sprintf("%s:%d", c.config.RabbitMQHost, c.config.RabbitMQPort)
+		logger.Info.Printf("publishing metrics to %s", rabbitMQURL)
+		c.rmq = interfacing.NewRabbitMQHandler(rabbitMQURL, c.config.RabbitMQUsername, c.config.RabbitMQPassword, "", c.config.RabbitMQAppID)
+	}
+
 	if c.config.PluginProcessName != "" {
 		logger.Info.Printf("looking for the plugin process (%s) ...", c.config.PluginProcessName)
 	} else {
@@ -116,6 +132,9 @@ func (c *Controller) Run() {
 		case e := <-ch:
 			data, _ := e.EncodeMetaToJson()
 			logger.Info.Printf("%s: %s", e.ToString(), data)
+			if c.config.EnableMetricsPublishing {
+				go c.rmq.SendWaggleMessage(e.ToWaggleMessage(), c.config.MetricsPublishingScope)
+			}
 		}
 	}
 }
