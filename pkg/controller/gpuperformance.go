@@ -19,6 +19,7 @@ type GPUPerformanceLogging struct {
 	GPUMetricHost string
 	Notifier      *interfacing.Notifier
 	quit          chan struct{}
+	interval      int
 }
 
 func NewGPUPerformanceLogging(c ControllerConfig) *GPUPerformanceLogging {
@@ -26,6 +27,7 @@ func NewGPUPerformanceLogging(c ControllerConfig) *GPUPerformanceLogging {
 		GPUMetricHost: c.GPUMetricHost,
 		Notifier:      interfacing.NewNotifier(),
 		quit:          make(chan struct{}),
+		interval:      c.PerformanceCollectionInterval,
 	}
 }
 
@@ -66,13 +68,13 @@ func (g *GPUPerformanceLogging) Stop() {
 }
 
 func (g *GPUPerformanceLogging) Run() {
-	ticker := time.NewTicker(5 * time.Second)
+	ticker := time.NewTicker(time.Duration(g.interval) * time.Second)
 	for {
 		select {
 		case <-ticker.C:
 			if u, err := g.getGPUMetric(); err == nil {
 				e := datatype.NewEventBuilder(datatype.EventPluginPerfGPU).
-					AddEntry("gpu_util", strconv.FormatFloat(u, 'f', 2, 32)).
+					AddValue(u).
 					Build()
 				g.Notifier.Notify(e)
 			} else {
