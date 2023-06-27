@@ -1,7 +1,9 @@
 package controller
 
 import (
+	"errors"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/waggle-sensor/edge-scheduler/pkg/datatype"
@@ -16,6 +18,10 @@ import (
 // to pluginctl watch myplugin to printout those to users
 // later, this can be consumed by the scheduler
 // or this can be streamed to a time-series database
+
+const (
+	PluginProcessStartedPath = "/app/started"
+)
 
 type ControllerConfig struct {
 	EnableCPUPerformanceLogging   bool
@@ -76,7 +82,13 @@ func (c *Controller) searchForPluginPID() error {
 			}
 		}
 	}
-	return fmt.Errorf("failed to find the process (%s)", c.config.PluginProcessName)
+	if _, err := os.Stat(PluginProcessStartedPath); err == nil {
+		return &backoff.PermanentError{
+			Err: fmt.Errorf("plugin might have finished its job already."),
+		}
+	} else {
+		return fmt.Errorf("failed to find the process (%s)", c.config.PluginProcessName)
+	}
 }
 
 func (c *Controller) Run() {
@@ -98,7 +110,10 @@ func (c *Controller) Run() {
 	backOffConfiguration := backoff.NewExponentialBackOff()
 	// it should not stop searching for plugin PID
 	backOffConfiguration.MaxElapsedTime = 0
-	backoff.Retry(c.searchForPluginPID, backOffConfiguration)
+	if err := backoff.Retry(c.searchForPluginPID, backOffConfiguration); err != nil {
+		logger.Info.Println(err.Error())
+		return
+	}
 	if c.config.EnableCPUPerformanceLogging {
 		logger.Info.Println("CPU performance measurement enabled")
 		if c.config.AppCgroupDir == "" {
@@ -123,8 +138,12 @@ func (c *Controller) Run() {
 			if pluginPidExists, err := process.PidExists(c.pluginProc.Pid); err == nil {
 				if !pluginPidExists {
 					logger.Info.Printf("plugin's PID (%d) does not exist", c.pluginProc.Pid)
-					logger.Info.Println("the plugin is terminated. plugin-controller terminates successfully.")
-					return
+					if _, err := os.Stat(PluginProcessStartedPath); errors.Is(err, os.ErrNotExist) {
+						logger.Info.Printf("%s does not exist. the plugin has not yet started.", PluginProcessStartedPath)
+					} else {
+						logger.Info.Println("the plugin is terminated. plugin-controller terminates successfully.")
+						return
+					}
 				}
 			} else {
 				logger.Error.Printf("failed to probe plugin PID (%d): %s", c.pluginProc.Pid, err.Error())
