@@ -99,6 +99,7 @@ func (c *Controller) Run() {
 		rabbitMQURL := fmt.Sprintf("%s:%d", c.config.RabbitMQHost, c.config.RabbitMQPort)
 		logger.Info.Printf("publishing metrics to %s", rabbitMQURL)
 		c.rmq = interfacing.NewRabbitMQHandler(rabbitMQURL, c.config.RabbitMQUsername, c.config.RabbitMQPassword, "", c.config.RabbitMQAppID)
+		c.rmq.StartLoop()
 	}
 
 	if c.config.PluginProcessName != "" {
@@ -152,7 +153,7 @@ func (c *Controller) Run() {
 			data, _ := e.EncodeMetaToJson()
 			logger.Info.Printf("%s: %s", e.ToString(), data)
 			if c.config.EnableMetricsPublishing {
-				go c.rmq.SendWaggleMessage(e.ToWaggleMessage(), c.config.MetricsPublishingScope)
+				c.rmq.SendWaggleMessageOnNodeAsync(e.ToWaggleMessage(), c.config.MetricsPublishingScope)
 			}
 		}
 	}
