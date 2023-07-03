@@ -6,7 +6,7 @@ ARG TARGETARCH
 WORKDIR /code
 COPY . /code/
 RUN go mod download \
-  && make plugin-controller-${TARGETARCH} \
+  && CGO_ENABLED=0 GOOS=linux GOARCH=${TARGETARCH} go build -o ./out/plugin-controller cmd/controller/main.go \
   && chmod +x ./out/plugin-controller
 
 FROM alpine:3.17
