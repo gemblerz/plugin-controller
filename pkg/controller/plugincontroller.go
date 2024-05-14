@@ -6,6 +6,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/waggle-sensor/edge-scheduler/pkg/datatype"
 	"github.com/waggle-sensor/edge-scheduler/pkg/interfacing"
 	"github.com/waggle-sensor/edge-scheduler/pkg/logger"
@@ -43,11 +44,13 @@ type Controller struct {
 	config     ControllerConfig
 	pluginProc *process.Process
 	rmq        *interfacing.RabbitMQHandler
+	apiServer  *APIServer
 }
 
 func NewController(c ControllerConfig) *Controller {
 	return &Controller{
-		config: c,
+		config:    c,
+		apiServer: NewAPIServer(),
 	}
 }
 
@@ -84,7 +87,7 @@ func (c *Controller) searchForPluginPID() error {
 	}
 	if _, err := os.Stat(PluginProcessStartedPath); err == nil {
 		return &backoff.PermanentError{
-			Err: fmt.Errorf("plugin might have finished its job already."),
+			Err: fmt.Errorf("plugin might have finished its job already"),
 		}
 	} else {
 		return fmt.Errorf("failed to find the process (%s)", c.config.PluginProcessName)
@@ -94,6 +97,9 @@ func (c *Controller) searchForPluginPID() error {
 func (c *Controller) Run() {
 	logger.Info.Println("plugin controller started.")
 	ch := make(chan datatype.Event)
+
+	// Setting up Prometheus metrics
+	reg := prometheus.NewRegistry()
 
 	if c.config.EnableMetricsPublishing {
 		rabbitMQURL := fmt.Sprintf("%s:%d", c.config.RabbitMQHost, c.config.RabbitMQPort)
@@ -123,8 +129,9 @@ func (c *Controller) Run() {
 			logger.Info.Printf("plugin cgroup path found: %s", c.config.AppCgroupDir)
 		}
 		p := NewCPUPerformanceLogging(c.config)
-		p.Notifier.Subscribe(ch)
-		go p.Run()
+		reg.MustRegister(p)
+		// p.Notifier.Subscribe(ch)
+		// go p.Run()
 	}
 	if c.config.EnableGPUPerformanceLogging {
 		logger.Info.Println("GPU performance measurement enabled")
@@ -132,6 +139,9 @@ func (c *Controller) Run() {
 		g.Notifier.Subscribe(ch)
 		go g.Run()
 	}
+
+	go c.apiServer.Run(reg)
+
 	ticker := time.NewTicker(time.Second)
 	for {
 		select {
