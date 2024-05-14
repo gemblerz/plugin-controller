@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -39,7 +41,7 @@ func (api *APIServer) Run(prometheusGatherer *prometheus.Registry) {
 	}
 	// api_route := r.PathPrefix("/api/v1").Subrouter()
 	// api_route.Handle("/kb/rules", http.HandlerFunc(api.handlerRules)).Methods(http.MethodGet, http.MethodPost)
-	log.Fatalln(http.ListenAndServe(api_address_port, r))
+	log.Fatalln(http.ListenAndServe(api_address_port, handlers.LoggingHandler(os.Stdout, r)))
 }
 
 func respondJSON(w http.ResponseWriter, statusCode int, data interface{}) {

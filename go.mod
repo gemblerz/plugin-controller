@@ -3,6 +3,7 @@ module github.com/waggle-sensor/plugin-controller
 go 1.20
 
 require (
+	github.com/gorilla/handlers v1.5.1
 	github.com/gorilla/mux v1.8.0
 	github.com/shirou/gopsutil/v3 v3.23.5
 	github.com/waggle-sensor/edge-scheduler v0.0.2-0.20230630222832-584346e949f3
@@ -13,6 +14,7 @@ require (
 require (
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/felixge/httpsnoop v1.0.1 // indirect
 	github.com/prometheus/client_model v0.5.0 // indirect
 	github.com/prometheus/common v0.48.0 // indirect
 	github.com/prometheus/procfs v0.12.0 // indirect

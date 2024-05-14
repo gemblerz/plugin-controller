@@ -102,9 +102,13 @@ func (c *CPUPerformanceLogging) ReadCPUSecondsPerCPU() ([]float64, error) {
 	if err != nil {
 		return []float64{}, err
 	}
-	values := strings.Split(string(buffer), " ")
+	values := strings.Split(strings.TrimSpace(string(buffer)), " ")
 	out := make([]float64, len(values))
 	for index, strNanoSeconds := range values {
+		if strNanoSeconds == "" {
+			logger.Error.Printf("%v has an empty string. skipping", values)
+			continue
+		}
 		nanoSeconds, err := strconv.ParseUint(strings.TrimSpace(strNanoSeconds), 10, 64)
 		if err != nil {
 			return out, err
