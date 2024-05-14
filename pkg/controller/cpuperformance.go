@@ -38,19 +38,19 @@ func NewCPUPerformanceLogging(c ControllerConfig) *CPUPerformanceLogging {
 		lastTotalCPUUsedT: time.Now(),
 
 		promCPUSecondsPerCPU: prometheus.NewDesc(
-			"plugin_per_cpu_seconds",
+			"plugin_per_cpu_seconds_total",
 			"Cumulative plugin cpu time consumped per cpu core in seconds",
 			[]string{"cpu"},
 			nil,
 		),
 		promCPUSeconds: prometheus.NewDesc(
-			"plugin_cpu_seconds",
+			"plugin_cpu_seconds_total",
 			"Cumulative plugin cpu time consumped in seconds",
 			nil,
 			nil,
 		),
 		promMemoryWorkingSet: prometheus.NewDesc(
-			"plugin_memory_workingset",
+			"plugin_memory_workingset_bytes",
 			"Amount of working set memory in bytes",
 			nil,
 			nil,
